@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import cors from 'cors'
 import express, { Application, NextFunction, Request, Response } from 'express'
 import httpStatus from 'http-status'
@@ -5,6 +6,7 @@ import httpStatus from 'http-status'
 import routes from './app/routes'
 
 import cookieParser from 'cookie-parser'
+import { globalErrorHandler } from './app/middleware/globalErrorHandler'
 
 const app: Application = express()
 
@@ -26,6 +28,20 @@ app.get('/', async (req: Request, res: Response, next: NextFunction) => {
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Welcome to Book Catalloge',
+  })
+})
+
+// global error handler
+app.use(globalErrorHandler)
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.status(httpStatus.NOT_FOUND).json({
+    success: false,
+    message: 'Not Found Route',
+    errorMessage: {
+      path: req.originalUrl,
+      message: 'Not Found Route',
+    },
   })
 })
 
