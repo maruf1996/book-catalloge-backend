@@ -61,7 +61,7 @@ model Book {
 model ReviewAndRating {
   id        String   @id @default(uuid())
   review    String
-  rating    Int
+  rating    Float
   userId    String   @map("user_id")
   bookId    String   @map("book_id")
   createdAt DateTime @default(now()) @map("created_at")

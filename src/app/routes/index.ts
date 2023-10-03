@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import express from 'express'
+import { ReviewsRoutes } from '../modules/ReviewAndRating/ReviewAndRating.route'
 import { AuthRoutes } from '../modules/auth/auth.route'
 import { BooksRoutes } from '../modules/book/book.route'
 import { CategoriesRoutes } from '../modules/category/categories.route'
@@ -12,6 +13,7 @@ const moduleRoutes: any[] = [
   { path: '/users', route: UserRoutes },
   { path: '/categories', route: CategoriesRoutes },
   { path: '/books', route: BooksRoutes },
+  { path: '/reviews', route: ReviewsRoutes },
 ]
 
 moduleRoutes.forEach(route => router.use(route.path, route.route))
