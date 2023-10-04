@@ -15,6 +15,12 @@ enum Role {
   customer
 }
 
+enum orderStatus {
+  pending
+  shipped
+  delivered
+}
+
 model User {
   id              String            @id @default(uuid())
   name            String
@@ -74,13 +80,13 @@ model ReviewAndRating {
 }
 
 model Order {
-  id           String   @id @default(uuid())
-  userId       String   @map("user_id")
-  orderedBooks Json[]   @map("ordered_books")
-  status       String   @default("pending")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-  user         User     @relation(fields: [userId], references: [id])
+  id           String      @id @default(uuid())
+  userId       String      @map("user_id")
+  orderedBooks Json        @map("ordered_books")
+  status       orderStatus @default(pending)
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  user         User        @relation(fields: [userId], references: [id])
 
   @@map("orders")
 }

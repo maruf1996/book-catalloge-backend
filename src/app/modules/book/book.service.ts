@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Book } from '@prisma/client'
 import { prisma } from '../../shared/prisma'
 
@@ -6,13 +7,83 @@ const createBook = async (data: Book): Promise<Book | null> => {
   return result
 }
 
-const getBooks = async (): Promise<Book[] | null> => {
+const getBooks = async (options: any) => {
+  const { sortBy, sortOrder, searchTerm, minPrice, maxPrice, ...filterData } =
+    options
+
+  const page = parseInt(options?.page) || 1
+  const size = parseInt(options?.size) || 10
+  const skip = size * page - size || 0
+  const take = size || 10
+  const minPriceFloat = parseFloat(minPrice) || 0
+  const maxPriceFloat = parseFloat(maxPrice) || 0
+
+  const where = {
+    AND: [] as any[],
+  }
+
+  if (searchTerm) {
+    where.AND.push({
+      OR: [
+        { title: { contains: searchTerm, mode: 'insensitive' } },
+        { author: { contains: searchTerm, mode: 'insensitive' } },
+        { genre: { contains: searchTerm, mode: 'insensitive' } },
+      ],
+    })
+  }
+
+  if (filterData.category) {
+    where.AND.push({
+      category: {
+        title: {
+          equals: filterData.category as string,
+          mode: 'insensitive',
+        },
+      },
+    })
+  }
+
+  if (maxPrice) {
+    where.AND.push({
+      price: {
+        lte: maxPriceFloat,
+      },
+    })
+  }
+
+  if (minPrice) {
+    where.AND.push({
+      price: {
+        gte: minPriceFloat,
+      },
+    })
+  }
+
   const result = await prisma.book.findMany({
     include: {
       category: true,
+      ReviewAndRating: true,
     },
+    skip,
+    take,
+    orderBy: {
+      [sortBy]: sortOrder as 'asc' | 'desc',
+    },
+    where,
   })
-  return result
+
+  const total = await prisma.book.count({ skip, take, where })
+  const totalPages = Math.ceil(total / size)
+
+  return {
+    meta: {
+      page,
+      size,
+      total,
+      totalPages,
+    },
+    data: result,
+  }
 }
 
 const getBook = async (id: string): Promise<Book | null> => {

@@ -17,11 +17,14 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
 
 const getBooks = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await BooksService.getBooks()
+    const options = req.query
+    // console.log(options)
+    const result = await BooksService.getBooks(options)
     res.status(200).json({
       status: 'success',
       message: 'Books Retrive successfully',
-      data: result,
+      meta: result.meta,
+      data: result.data,
     })
   } catch (error) {
     next(error)
