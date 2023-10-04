@@ -116,9 +116,12 @@ const deleteBook = async (id: string) => {
   return result
 }
 
-const getBooksByCategoryId = async (
-  categoryId: string,
-): Promise<Book[] | null> => {
+const getBooksByCategoryId = async (categoryId: string, options: any) => {
+  const page = parseInt(options?.page) || 1
+  const size = parseInt(options?.size) || 10
+  const skip = size * page - size || 0
+  const take = size || 10
+
   const isExistCategory = await prisma.category.findMany({})
 
   if (!isExistCategory) {
@@ -135,7 +138,18 @@ const getBooksByCategoryId = async (
     },
   })
 
-  return result
+  const total = await prisma.book.count({ skip, take })
+  const totalPages = Math.ceil(total / size)
+
+  return {
+    meta: {
+      page,
+      size,
+      total,
+      totalPages,
+    },
+    data: result,
+  }
 }
 
 export const BooksService = {

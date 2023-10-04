@@ -1,45 +1,174 @@
-import { Order } from '@prisma/client'
+import httpStatus from 'http-status'
+import { Secret } from 'jsonwebtoken'
+import ApiError from '../../../Errors/ApiError'
+import config from '../../../config'
+import { ENUM_USER_ROLE } from '../../../enums/user'
+import { jwtHelpers } from '../../Helpers/jwtHelpers'
 import { prisma } from '../../shared/prisma'
+import { IOrderRequest } from './orders.interface'
 
-const createOrder = async data => {
-  const result = await prisma.order.create({ data })
+const createOrder = async (data: IOrderRequest, token: string) => {
+  let decodedToken
+  try {
+    decodedToken = jwtHelpers.verifyToken(token, config.jwt.secret as Secret)
+  } catch (error) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Invalid access Token')
+  }
+
+  const orderData = {
+    userId: decodedToken.userId,
+    ...data,
+  }
+
+  const result = await prisma.order.create({
+    data: orderData,
+  })
   return result
 }
 
-const getOrders = async (): Promise<Order[] | null> => {
-  const result = await prisma.order.findMany({
-    include: {
-      user: true,
+const getOrders = async (token: string) => {
+  let decodedToken
+  try {
+    decodedToken = jwtHelpers.verifyToken(token, config.jwt.secret as Secret)
+  } catch (error) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Invalid access Token')
+  }
+
+  const isUserExist = await prisma.user.findUnique({
+    where: {
+      id: decodedToken.userId,
     },
   })
+
+  //
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'User is not Exist')
+  }
+
+  let result = null
+
+  if (isUserExist && isUserExist?.role === ENUM_USER_ROLE.CUSTOMER) {
+    result = await prisma.order.findMany({
+      where: {
+        userId: decodedToken.userId,
+      },
+      select: {
+        id: true,
+        status: true,
+        userId: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            email: true,
+            contactNo: true,
+            role: true,
+          },
+        },
+        orderedBooks: true,
+      },
+    })
+  }
+  if (isUserExist && isUserExist?.role === ENUM_USER_ROLE.ADMIN) {
+    result = await prisma.order.findMany({
+      select: {
+        id: true,
+        status: true,
+        userId: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            email: true,
+            contactNo: true,
+            role: true,
+          },
+        },
+        orderedBooks: true,
+      },
+    })
+  }
+
+  if (!result?.length) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'No Orders Found !!')
+  }
+
   return result
 }
 
-const getOrder = async (id: string): Promise<Order | null> => {
-  const result = await prisma.order.findUnique({
-    where: { id },
-    include: {
-      user: true,
+const getOrder = async (id: string, token: string) => {
+  let decodedToken
+  try {
+    decodedToken = jwtHelpers.verifyToken(token, config.jwt.secret as Secret)
+  } catch (error) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Invalid access Token')
+  }
+  const isUserExist = await prisma.user.findUnique({
+    where: {
+      id: decodedToken.userId,
     },
   })
-  return result
-}
 
-const updateOrder = async (
-  id: string,
-  payload: Partial<Order>,
-): Promise<Partial<Order> | null> => {
-  const result = await prisma.order.update({
-    where: { id },
-    data: payload,
-  })
-  return result
-}
+  //
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'User is not Exist')
+  }
 
-const deleteOrder = async (id: string) => {
-  const result = await prisma.order.delete({
-    where: { id },
-  })
+  let result = null
+  if (isUserExist && isUserExist.role === ENUM_USER_ROLE.ADMIN) {
+    result = await prisma.order.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        status: true,
+        userId: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            email: true,
+            contactNo: true,
+            role: true,
+          },
+        },
+        orderedBooks: true,
+      },
+    })
+  }
+  if (isUserExist && isUserExist.role === ENUM_USER_ROLE.CUSTOMER) {
+    result = await prisma.order.findUnique({
+      where: {
+        id,
+        userId: decodedToken.userId,
+      },
+      select: {
+        id: true,
+        status: true,
+        userId: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            email: true,
+            contactNo: true,
+            role: true,
+          },
+        },
+        orderedBooks: true,
+      },
+    })
+  }
+
+  if (!result) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'You are not Authorized User !!')
+  }
+
   return result
 }
 
@@ -47,6 +176,4 @@ export const OrderService = {
   createOrder,
   getOrders,
   getOrder,
-  updateOrder,
-  deleteOrder,
 }

@@ -80,15 +80,17 @@ const getBooksByCategoryId = async (
   next: NextFunction,
 ) => {
   try {
-    // console.log(req.params.categoryId)
+    const options = req.query
     const result = await BooksService.getBooksByCategoryId(
       req.params.categoryId,
+      options,
     )
 
     res.status(200).json({
       status: 'success',
       message: 'Books with associated category data fetched successfully',
-      data: result,
+      meta: result.meta,
+      data: result.data,
     })
   } catch (error) {
     next(error)
