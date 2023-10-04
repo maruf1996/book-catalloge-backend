@@ -3,6 +3,7 @@
 import { Prisma } from '@prisma/client'
 import { NextFunction, Request, Response } from 'express'
 import httpStatus from 'http-status'
+import ApiError from '../../Errors/ApiError'
 import config from '../../config'
 
 export const globalErrorHandler = (
@@ -27,6 +28,9 @@ export const globalErrorHandler = (
       message = lines[lines.length - 1]
     } else if (error instanceof Error) {
       statusCode = httpStatus.INTERNAL_SERVER_ERROR
+      message = error.message
+    } else if (error instanceof ApiError) {
+      statusCode = error?.statusCode
       message = error.message
     }
   }
