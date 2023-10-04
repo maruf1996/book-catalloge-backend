@@ -14,6 +14,9 @@ const getCategories = async (): Promise<Category[] | null> => {
 const getCategory = async (id: string): Promise<Category | null> => {
   const result = await prisma.category.findUnique({
     where: { id },
+    include: {
+      Book: true,
+    },
   })
   return result
 }

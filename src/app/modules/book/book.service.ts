@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Book } from '@prisma/client'
+import httpStatus from 'http-status'
+import ApiError from '../../../Errors/ApiError'
 import { prisma } from '../../shared/prisma'
 
 const createBook = async (data: Book): Promise<Book | null> => {
@@ -114,10 +116,33 @@ const deleteBook = async (id: string) => {
   return result
 }
 
+const getBooksByCategoryId = async (
+  categoryId: string,
+): Promise<Book[] | null> => {
+  const isExistCategory = await prisma.category.findMany({})
+
+  if (!isExistCategory) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Category Not Exist')
+  }
+
+  const result = await prisma.book.findMany({
+    where: {
+      categoryId,
+    },
+    include: {
+      category: true,
+      ReviewAndRating: true,
+    },
+  })
+
+  return result
+}
+
 export const BooksService = {
   createBook,
   getBooks,
   getBook,
   updateBook,
   deleteBook,
+  getBooksByCategoryId,
 }

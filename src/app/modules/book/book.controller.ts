@@ -74,10 +74,32 @@ const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
   }
 }
 
+const getBooksByCategoryId = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    // console.log(req.params.categoryId)
+    const result = await BooksService.getBooksByCategoryId(
+      req.params.categoryId,
+    )
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Books with associated category data fetched successfully',
+      data: result,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const BooksController = {
   createBook,
   getBooks,
   updateBook,
   getBook,
   deleteBook,
+  getBooksByCategoryId,
 }
