@@ -82,7 +82,7 @@ model ReviewAndRating {
 model Order {
   id           String      @id @default(uuid())
   userId       String      @map("user_id")
-  orderedBooks Json[]      @map("ordered_books")
+  orderedBooks Json        @map("ordered_books")
   status       orderStatus @default(pending)
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")

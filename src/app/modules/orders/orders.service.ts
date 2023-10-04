@@ -20,9 +20,11 @@ const createOrder = async (data: IOrderRequest, token: string) => {
     ...data,
   }
 
+  // console.log(orderData)
   const result = await prisma.order.create({
     data: orderData,
   })
+
   return result
 }
 

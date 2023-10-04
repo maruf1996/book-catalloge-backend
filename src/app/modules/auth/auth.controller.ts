@@ -29,7 +29,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     res.cookie('refreshToken', refreshToken, cookieOptions)
-    console.log(token)
+    // console.log(token)
 
     res.status(200).json({
       status: 'success',

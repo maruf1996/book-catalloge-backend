@@ -4,7 +4,7 @@ import { OrderService } from './orders.service'
 const createOrder = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = req.headers?.authorization
-    const { ...data } = req.body
+    const data = req.body
     const result = await OrderService.createOrder(data, token as string)
     res.status(200).json({
       status: 'success',
