@@ -11,7 +11,7 @@ router.post(
   OrderController.createOrder,
 )
 router.get(
-  '/:id',
+  '/:orderId',
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.CUSTOMER),
   OrderController.getOrder,
 )

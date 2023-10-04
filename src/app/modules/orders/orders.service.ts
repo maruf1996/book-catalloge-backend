@@ -113,6 +113,8 @@ const getOrder = async (id: string, token: string) => {
     },
   })
 
+  // console.log(id)
+
   //
   if (!isUserExist) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'User is not Exist')
