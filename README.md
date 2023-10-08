@@ -36,8 +36,8 @@ It seamlessly integrates with a relational database to store book-related data a
 
   ```json
   {
-    "email": "john@example.com",
-    "password": "john123"
+    "email": "maruf@example.com",
+    "password": "maruf123"
   }
   ```
 
@@ -46,6 +46,7 @@ It seamlessly integrates with a relational database to store book-related data a
 #### User
 
 - api/v1/auth/signup (POST)
+- api/v1/auth/signin (POST)
 - api/v1/users (GET)
 - api/v1/users/:id (Single GET) Include an id that is saved in your database
 - api/v1/users/:id (PATCH)
